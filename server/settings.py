@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
-    "rest_framework.authtoken"
+    "rest_framework.authtoken",
+    'projects'
 ]
 
 MIDDLEWARE = [
@@ -54,9 +55,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'server.urls'
-
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200',  # your Angular frontend
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:4200',  # Your Angular frontend URL
 ]
 
 CORS_ALLOW_METHODS = [
@@ -77,6 +78,12 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:4200",
+]
+CSRF_COOKIE_SAMESITE = 'Lax'  # Or 'None' if needed
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 TEMPLATES = [
     {

@@ -1,15 +1,15 @@
 POST  http://127.0.0.1:8000/login
 Content-Type: application/json
 
-{"email":"qwerty@gmail.com", "password":"qwerty"}
+{"email":"h111i@gmail.com", "password":"hi"}
 ###
 POST  http://127.0.0.1:8000/signup
 Content-Type: application/json
 
-{"username":"hi", "password":"hi", "email":"hi@gmail.com"}
+{"username":"h132131i", "password":"hi", "email":"h111i@gmail.com"}
 ###
-GET http://127.0.0.1:8000/test_token
+GET http://127.0.0.1:8000/user-details
 Content-Type: application/json
-Authorization: Token 17e5f5154824181e1c5e41b49693664d8711f164
+Cookie:  access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ0MTk2ODYzLCJpYXQiOjE3NDQxOTY1NjMsImp0aSI6IjhlMTNhNWVlZTEwZTQxYzZhOTAzMzgwN2QzNjE5MTVjIiwidXNlcl9pZCI6Nn0.d7WkE68Z6J8rdTxx2xaBUjr1yyscnSl4BmCsG1CBtx0
 
 {}

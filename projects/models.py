@@ -16,6 +16,7 @@ class Project(models.Model):
     ]
     
     project_id = models.AutoField(primary_key=True)
+    asda = models.CharField((""), max_length=50)
     name = models.CharField(max_length=255)
     language = models.CharField(max_length=20, choices=LANGUAGES)
     code = models.TextField()
