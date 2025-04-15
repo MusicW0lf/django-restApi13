@@ -1,10 +1,13 @@
-from django.urls import re_path
+from django.urls import path
 from projects import views
 urlpatterns = [
-    re_path('login',views.login),
-    re_path('logout',views.logout),
-    re_path('signup',views.signup),
-    re_path('user-projects',views.user_projects),
-    re_path('user-details', views.get_user_details),
-    re_path('create-project', views.create_project)
+    path('login',views.login),
+    path('logout',views.logout),
+    path('signup',views.signup),
+    path('user-projects/',views.user_projects),
+    path('user-details', views.get_user_details),
+    path('create-project', views.create_project),
+    path('project/<int:project_id>/', views.get_project_for_author),
+    path('project/<int:project_id>/delete/', views.delete_project),
+    path('project/<int:project_id>/rename/', views.rename_project)
 ]

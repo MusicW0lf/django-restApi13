@@ -14,6 +14,8 @@ from django.http import JsonResponse
 from .models import Project
 from .serializers import ProjectSerializer
 from random import randint
+
+
 @api_view(['GET'])
 @authentication_classes([CookieJWTAuthentication])
 @permission_classes([IsAuthenticated]) 
@@ -72,28 +74,24 @@ def login(request):
 
 @api_view(['POST'])
 def signup(request):
-    # Assuming you have a serializer to handle user registration
     serializer = UserSerializer(data=request.data)
 
     if serializer.is_valid():
-        user = serializer.save()  # Create the user
-        
-        # Set password securely
+        user = serializer.save() 
+
         user.set_password(request.data['password'])
         user.save()
 
-        # Create JWT token for the user (access token and refresh token)
         refresh = RefreshToken.for_user(user)
-        
-        # Set the access token in an HTTP-only cookie
+
         response = Response({'message': 'User created successfully.'})
         response.set_cookie(
             key='access_token',
             value=str(refresh.access_token),
-            httponly=True,  # Ensures the cookie is not accessible via JavaScript
-            #secure=True,  # Ensures the cookie is only sent over HTTPS
-            samesite='Lax',  # Prevents cross-site request forgery (CSRF)
-            expires=timezone.now() + timedelta(minutes=60),  # Set the expiration time
+            httponly=True,
+            #secure=True, 
+            samesite='Lax', 
+            expires=timezone.now() + timedelta(minutes=60),
         )
         return response
     else:
@@ -111,15 +109,58 @@ def create_project(request):
     if not name or not language:
         return Response({'error': 'Name and language are required.'}, status=status.HTTP_400_BAD_REQUEST)
     
-    # Generate random colors (e.g., for your graph project)
     random_colors = [f"#{randint(0, 0xFFFFFF):06x}" for _ in range(2)]
 
     project = Project.objects.create(
         name=name,
         language=language,
-        code="",
+        code="You can write your code here!",
         author=user,
         random_colors=random_colors,
     )
 
     return Response({'project_id': project.project_id}, status=status.HTTP_201_CREATED)
+
+
+
+@api_view(['GET'])
+@authentication_classes([CookieJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_project_for_author(request, project_id):
+    try:
+        project = Project.objects.get(pk=project_id)
+    except Project.DoesNotExist:
+        return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if project.author.id != request.user.id:
+        return Response({'error': 'Forbidden: You are not the author of this project.'}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = ProjectSerializer(project)
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([CookieJWTAuthentication])
+def delete_project(request, project_id):
+    project = get_object_or_404(Project, project_id=project_id)
+    if project.author != request.user:
+        return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+    project.delete()
+    return Response({'detail': 'Project deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([CookieJWTAuthentication])
+def rename_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    if project.author != request.user:
+        return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+    new_name = request.data.get('name')
+    if not new_name:
+        return Response({'detail': 'Missing new name'}, status=status.HTTP_400_BAD_REQUEST)
+
+    project.name = new_name
+    project.save()
+    return Response({'detail': 'Project renamed'}, status=status.HTTP_200_OK)
