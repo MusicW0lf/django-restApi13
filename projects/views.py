@@ -13,7 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from .models import Project
 from .serializers import ProjectSerializer
-
+from random import randint
 @api_view(['GET'])
 @authentication_classes([CookieJWTAuthentication])
 @permission_classes([IsAuthenticated]) 
@@ -43,7 +43,6 @@ def user_projects(request):
     # Serialize the projects
     serializer = ProjectSerializer(projects, many=True)
     
-    print(serializer.data)
     return JsonResponse(serializer.data, safe=False)
 
 
@@ -99,3 +98,28 @@ def signup(request):
         return response
     else:
         return Response(serializer.errors, status=400)
+    
+
+@api_view(['POST'])
+@authentication_classes([CookieJWTAuthentication])
+@permission_classes([IsAuthenticated]) 
+def create_project(request):
+    user = request.user
+    name = request.data.get('name')
+    language = request.data.get('language')
+
+    if not name or not language:
+        return Response({'error': 'Name and language are required.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Generate random colors (e.g., for your graph project)
+    random_colors = [f"#{randint(0, 0xFFFFFF):06x}" for _ in range(2)]
+
+    project = Project.objects.create(
+        name=name,
+        language=language,
+        code="",
+        author=user,
+        random_colors=random_colors,
+    )
+
+    return Response({'project_id': project.project_id}, status=status.HTTP_201_CREATED)

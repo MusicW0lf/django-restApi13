@@ -5,5 +5,6 @@ urlpatterns = [
     re_path('logout',views.logout),
     re_path('signup',views.signup),
     re_path('user-projects',views.user_projects),
-    re_path('user-details', views.get_user_details)
+    re_path('user-details', views.get_user_details),
+    re_path('create-project', views.create_project)
 ]
