@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from conf import DB_HOST, DB_PASSWORD, DB_PORT, DB_USERNAME
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,7 +58,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'server.urls'
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:4200',  # Your Angular frontend URL
+    'http://localhost:4200',  # Angular frontend URL
 ]
 
 CORS_ALLOW_METHODS = [
@@ -65,24 +66,24 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
     'DELETE',
-    'PATCH',  # Add any other methods you want to allow
+    'PATCH',
 ]
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'BiFurryUwU', 
-        'HOST': 'database-1.c5wkmk0a67gw.eu-north-1.rds.amazonaws.com',
-        'PORT': '5432',
+        'USER': DB_USERNAME,
+        'PASSWORD': DB_PASSWORD, 
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
     }
 }
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:4200",
 ]
-CSRF_COOKIE_SAMESITE = 'Lax'  # Or 'None' if needed
+CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
 
 TEMPLATES = [
