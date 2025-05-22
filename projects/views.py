@@ -94,6 +94,7 @@ def execute(request):
             'all': all,
             'enumerate': enumerate,
             'zip': zip,
+            'next': next,
         }
 
         # Capture printed output
