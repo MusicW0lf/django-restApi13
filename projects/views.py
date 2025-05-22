@@ -113,9 +113,11 @@ def execute(request):
         output = result if result else 'Execution completed without output.'
 
         return Response({'stdout': output, 'error': None}, status=status.HTTP_200_OK)
-
+    
     except Exception as e:
-        return Response({'stdout': None, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Handle errors gracefully
+        return JsonResponse({'stdout': None, 'error': str(e)})
+
 
 
 @api_view(['POST'])
