@@ -8,7 +8,6 @@ class CookieJWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
         # Look for the token in the cookies
         token = request.COOKIES.get('access_token')
-        print("rhis", token)
         
         if not token:
             return None  # No token found, so no authentication

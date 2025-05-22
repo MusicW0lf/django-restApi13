@@ -14,7 +14,8 @@ from django.http import JsonResponse
 from .models import Project
 from .serializers import ProjectSerializer
 from random import randint
-
+from RestrictedPython import compile_restricted, safe_globals
+from RestrictedPython.Guards import safe_builtins
 
 @api_view(['GET'])
 @authentication_classes([CookieJWTAuthentication])
@@ -46,6 +47,75 @@ def user_projects(request):
     serializer = ProjectSerializer(projects, many=True)
     
     return JsonResponse(serializer.data, safe=False)
+
+
+
+@api_view(['POST'])
+@authentication_classes([CookieJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def execute(request):
+    try:
+        # Extract code and project_id from request data
+        code = request.data.get('code', '')
+        project_id = request.data.get('project_id')
+
+        if not project_id:
+            return Response({'stdout': None, 'error': 'project_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        project = get_object_or_404(Project, project_id=project_id)
+
+        # Save the code to the project
+        project.code = code
+        project.save()
+
+        if not code:
+            return Response({'stdout': None, 'error': 'No code provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Prepare restricted execution environment
+        exec_globals = safe_globals.copy()
+        exec_globals['__builtins__'] = safe_builtins.copy()
+
+        # Define allowed built-ins
+        allowed_builtins = {
+            'range': range,
+            'len': len,
+            'int': int,
+            'float': float,
+            'str': str,
+            'list': list,
+            'dict': dict,
+            'set': set,
+            'tuple': tuple,
+            'sorted': sorted,
+            'min': min,
+            'max': max,
+            'sum': sum,
+            'any': any,
+            'all': all,
+            'enumerate': enumerate,
+            'zip': zip,
+        }
+
+        # Capture printed output
+        result = []
+
+        def custom_print(*args, **kwargs):
+            result.append(" ".join(map(str, args)))
+
+        allowed_builtins['print'] = custom_print
+        exec_globals['__builtins__'].update(allowed_builtins)
+        exec_globals['result'] = result.append
+
+        # Compile and execute the code
+        compiled_code = compile_restricted(code, '<string>', 'exec', policy=None)
+        exec(compiled_code, exec_globals, {})
+
+        output = result if result else 'Execution completed without output.'
+
+        return Response({'stdout': output, 'error': None}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'stdout': None, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
