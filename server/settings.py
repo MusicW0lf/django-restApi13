@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from conf import DB_HOST, DB_PASSWORD, DB_PORT, DB_USERNAME
-
+from datetime import timedelta
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,12 +27,20 @@ SECRET_KEY = 'django-insecure-vi_t&!q5f31k^03+tk3ygw0x=l85$!^v*##gy%*2v%!cf$c!g9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+]
 
+
+ALLOWED_HOSTS = []
+AUTHENTICATION_BACKENDS = [
+    'projects.auth.EmailBackend',
+]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'graphene_django',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,9 +49,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
-    "rest_framework.authtoken",
     'projects'
 ]
+
+GRAPHENE = {
+    "SCHEMA": "projects.schema.schema"
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -72,11 +84,11 @@ CORS_ALLOW_METHODS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': "AlgoLib",
         'USER': DB_USERNAME,
-        'PASSWORD': DB_PASSWORD, 
+        'PASSWORD': DB_PASSWORD,
         'HOST': DB_HOST,
-        'PORT': DB_PORT,
+        'PORT': DB_PORT, 
     }
 }
 
@@ -102,6 +114,9 @@ TEMPLATES = [
     },
 ]
 
+AUTH_USER_MODEL = 'projects.CustomUser'
+
+
 WSGI_APPLICATION = 'server.wsgi.application'
 
 # Password validation
@@ -122,6 +137,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

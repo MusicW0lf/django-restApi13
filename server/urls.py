@@ -1,5 +1,6 @@
 from django.urls import path
 from projects import views
+from projects.graphql_views import CustomGraphQLView
 urlpatterns = [
     path('login',views.login),
     path('logout',views.logout),
@@ -10,5 +11,6 @@ urlpatterns = [
     path('project/<int:project_id>/', views.get_project_for_author),
     path('project/<int:project_id>/delete/', views.delete_project),
     path('project/<int:project_id>/rename/', views.rename_project),
-    path('project/execute/', views.execute)
+    path('project/execute/', views.execute),
+    path("graphql/", CustomGraphQLView.as_view(graphiql=True)),
 ]

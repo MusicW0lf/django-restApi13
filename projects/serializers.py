@@ -1,12 +1,22 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from .models import Project
+from .models import Project, CustomUser
 
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta(object):
-        model = User
+    class Meta:
+        model = CustomUser
         fields = ['id', 'username', 'password', 'email']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = CustomUser(
+            username=validated_data['username'],
+            email=validated_data['email']
+        )
+        user.set_password(validated_data['password'])  # hashes once
+        user.save()
+        return user
+
 
 
 class ProjectSerializer(serializers.ModelSerializer):

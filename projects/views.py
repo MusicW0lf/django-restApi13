@@ -4,7 +4,7 @@ from projects.auth import CookieJWTAuthentication
 from rest_framework.decorators import api_view ,authentication_classes, permission_classes
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
 from .serializers import UserSerializer
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -32,7 +32,7 @@ def get_user_details(request):
 @authentication_classes([CookieJWTAuthentication])
 @permission_classes([IsAuthenticated]) 
 def logout(request):
-    response = Response({"message": "Logged out"})
+    response = Response({"message": "Logged out"}, status=status.HTTP_200_OK)
     response.delete_cookie('access_token')  # Match name and path
     return response
 
@@ -119,31 +119,29 @@ def execute(request):
             # Handle errors gracefully
         return JsonResponse({'stdout': None, 'error': str(e)})
 
-
-
 @api_view(['POST'])
 def login(request):
-    # Get the user by email
-    user = get_object_or_404(get_user_model(), email=request.data['email'])
-    
-    # Check if the password is correct
-    if not user.check_password(request.data['password']):
-        return Response({"detail": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Generate JWT token (access token and refresh token)
-    refresh = RefreshToken.for_user(user)
-    
-    response = Response({'message': 'Login successful.'})
-    response.set_cookie(
-        key='access_token',
-        value=str(refresh.access_token),
-        httponly=True,  # Ensures the cookie is not accessible via JavaScript
-        secure=False,  # Ensure this is True in production with HTTPS
-        samesite='Lax',  # Helps prevent cross-site request forgery (CSRF)
-        expires=timezone.now() + timedelta(minutes=60),  # Set the expiration time for 1 hour
-    )
-    
-    return response
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    user = authenticate(request, email=email, password=password)
+
+    if user is not None:
+        refresh = RefreshToken.for_user(user)
+        
+        response = Response({'message': 'Login successful.'}, status=status.HTTP_200_OK)
+        response.set_cookie(
+            key='access_token',
+            value=str(refresh.access_token),
+            httponly=True,
+            secure=False,  # Use True in production with HTTPS
+            samesite='Lax',
+            expires=timezone.now() + timedelta(minutes=60),
+        )
+        return response
+    else:
+        return Response({'detail': 'Invalid email or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 @api_view(['POST'])
 def signup(request):
@@ -226,7 +224,7 @@ def delete_project(request, project_id):
 @permission_classes([IsAuthenticated])
 @authentication_classes([CookieJWTAuthentication])
 def rename_project(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
+    project = get_object_or_404(Project, project_id=project_id)
     if project.author != request.user:
         return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
 

@@ -1,7 +1,17 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-User = get_user_model()
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True, db_index=True)
+
+    USERNAME_FIELD = 'email'  # <-- this tells Django that 'email' is the login field
+    REQUIRED_FIELDS = ['username']  # still required if you want to collect username too
+
+
+
 
 LANG = ['python', 'js', 'java', 'c', 'csharp', 'ruby', 'go']
 
@@ -25,7 +35,7 @@ class Project(models.Model):
     code = models.TextField()
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects")
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="projects")
     random_colors = models.JSONField() 
     
     def save(self, *args, **kwargs):
