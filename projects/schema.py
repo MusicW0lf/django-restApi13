@@ -9,11 +9,6 @@ from RestrictedPython import compile_restricted, safe_globals
 from RestrictedPython.Guards import safe_builtins
 from graphql import GraphQLError
 from functools import wraps
-from rest_framework_simplejwt.tokens import RefreshToken
-from projects.serializers import UserSerializer
-from django.utils.timezone import now
-from datetime import timedelta
-from django.contrib.auth import authenticate
 from random import randint
 
 class UserType(DjangoObjectType):

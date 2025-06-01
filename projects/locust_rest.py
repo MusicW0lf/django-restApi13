@@ -7,7 +7,7 @@ user_credentials = []
 with open("users.csv", newline="") as f:
     reader = csv.DictReader(f)
     for i, row in enumerate(reader):
-        if i >= 1000:
+        if i >= 100:
             break
         user_credentials.append(row)
 

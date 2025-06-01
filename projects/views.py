@@ -22,11 +22,7 @@ from RestrictedPython.Guards import safe_builtins
 @permission_classes([IsAuthenticated]) 
 def get_user_details(request):
     user = request.user
-
-
-    if user.username:
-        return Response({'username': user.username})
-    return Response({'username': "Guest"})
+    return JsonResponse({'username': user.username or 'Guest'})
 
 @api_view(['POST'])
 @authentication_classes([CookieJWTAuthentication])
@@ -40,13 +36,10 @@ def logout(request):
 @authentication_classes([CookieJWTAuthentication])
 @permission_classes([IsAuthenticated]) 
 def user_projects(request):
-    # Get the projects of the currently authenticated user
-    projects = Project.objects.filter(author=request.user)
-    
-    # Serialize the projects
-    serializer = ProjectSerializer(projects, many=True)
-    
-    return JsonResponse(serializer.data, safe=False)
+    projects = Project.objects.filter(author=request.user).values(
+        'project_id', 'name', 'code'
+    )
+    return JsonResponse(list(projects), safe=False)
 
 
 
@@ -60,7 +53,7 @@ def execute(request):
         project_id = request.data.get('project_id')
 
         if not project_id:
-            return Response({'stdout': None, 'error': 'project_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'stdout': None, 'error': 'project_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         project = get_object_or_404(Project, project_id=project_id)
 
@@ -69,7 +62,7 @@ def execute(request):
         project.save()
 
         if not code:
-            return Response({'stdout': None, 'error': 'No code provided.'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'stdout': None, 'error': 'No code provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Prepare restricted execution environment
         exec_globals = safe_globals.copy()
@@ -113,7 +106,7 @@ def execute(request):
 
         output = result if result else 'Execution completed without output.'
 
-        return Response({'stdout': output, 'error': None}, status=status.HTTP_200_OK)
+        return JsonResponse({'stdout': output, 'error': None}, status=status.HTTP_200_OK)
     
     except Exception as e:
             # Handle errors gracefully
@@ -129,7 +122,7 @@ def login(request):
     if user is not None:
         refresh = RefreshToken.for_user(user)
         
-        response = Response({'message': 'Login successful.'}, status=status.HTTP_200_OK)
+        response = JsonResponse({'message': 'Login successful.'}, status=status.HTTP_200_OK)
         response.set_cookie(
             key='access_token',
             value=str(refresh.access_token),
@@ -140,7 +133,7 @@ def login(request):
         )
         return response
     else:
-        return Response({'detail': 'Invalid email or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+        return JsonResponse({'detail': 'Invalid email or password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(['POST'])
@@ -155,7 +148,7 @@ def signup(request):
 
         refresh = RefreshToken.for_user(user)
 
-        response = Response({'message': 'User created successfully.'})
+        response = JsonResponse({'message': 'User created successfully.'})
         response.set_cookie(
             key='access_token',
             value=str(refresh.access_token),
@@ -166,7 +159,7 @@ def signup(request):
         )
         return response
     else:
-        return Response(serializer.errors, status=400)
+        return JsonResponse(serializer.errors, status=400)
     
 
 @api_view(['POST'])
@@ -178,7 +171,7 @@ def create_project(request):
     language = request.data.get('language')
 
     if not name or not language:
-        return Response({'error': 'Name and language are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': 'Name and language are required.'}, status=status.HTTP_400_BAD_REQUEST)
     
     random_colors = [f"#{randint(0, 0xFFFFFF):06x}" for _ in range(2)]
 
@@ -190,7 +183,7 @@ def create_project(request):
         random_colors=random_colors,
     )
 
-    return Response({'project_id': project.project_id}, status=status.HTTP_201_CREATED)
+    return JsonResponse({'project_id': project.project_id}, status=status.HTTP_201_CREATED)
 
 
 
@@ -201,13 +194,13 @@ def get_project_for_author(request, project_id):
     try:
         project = Project.objects.get(pk=project_id)
     except Project.DoesNotExist:
-        return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if project.author.id != request.user.id:
-        return Response({'error': 'Forbidden: You are not the author of this project.'}, status=status.HTTP_403_FORBIDDEN)
+        return JsonResponse({'error': 'Forbidden: You are not the author of this project.'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = ProjectSerializer(project)
-    return Response(serializer.data)
+    return JsonResponse(serializer.data)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -215,10 +208,10 @@ def get_project_for_author(request, project_id):
 def delete_project(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
     if project.author != request.user:
-        return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+        return JsonResponse({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
 
     project.delete()
-    return Response({'detail': 'Project deleted'}, status=status.HTTP_204_NO_CONTENT)
+    return JsonResponse({'detail': 'Project deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -226,12 +219,12 @@ def delete_project(request, project_id):
 def rename_project(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
     if project.author != request.user:
-        return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+        return JsonResponse({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
 
     new_name = request.data.get('name')
     if not new_name:
-        return Response({'detail': 'Missing new name'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'detail': 'Missing new name'}, status=status.HTTP_400_BAD_REQUEST)
 
     project.name = new_name
     project.save()
-    return Response({'detail': 'Project renamed'}, status=status.HTTP_200_OK)
+    return JsonResponse({'detail': 'Project renamed'}, status=status.HTTP_200_OK)
