@@ -84,11 +84,11 @@ CORS_ALLOW_METHODS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': "AlgoLib",
-        'USER': DB_USERNAME,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': DB_HOST,
-        'PORT': DB_PORT, 
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres', 
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
