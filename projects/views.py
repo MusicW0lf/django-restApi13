@@ -37,7 +37,7 @@ def logout(request):
 @permission_classes([IsAuthenticated]) 
 def user_projects(request):
     projects = Project.objects.filter(author=request.user).values(
-        'project_id', 'name', 'code'
+        'project_id', 'name', 'code', 'random_colors', "language"
     )
     return JsonResponse(list(projects), safe=False)
 
@@ -211,7 +211,7 @@ def delete_project(request, project_id):
         return JsonResponse({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
 
     project.delete()
-    return JsonResponse({'detail': 'Project deleted'}, status=status.HTTP_204_NO_CONTENT)
+    return JsonResponse({'detail': 'Project deleted'}, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -219,12 +219,12 @@ def delete_project(request, project_id):
 def rename_project(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
     if project.author != request.user:
-        return JsonResponse({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+        return JsonResponse({'detail': 'Forbidden', "success": False}, status=status.HTTP_403_FORBIDDEN)
 
-    new_name = request.data.get('name')
+    new_name = request.data.get('new_name')
     if not new_name:
-        return JsonResponse({'detail': 'Missing new name'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'detail': 'Missing new name', "success": False}, status=status.HTTP_400_BAD_REQUEST)
 
     project.name = new_name
     project.save()
-    return JsonResponse({'detail': 'Project renamed'}, status=status.HTTP_200_OK)
+    return JsonResponse({'detail': 'Project renamed', "success": True}, status=status.HTTP_200_OK)
