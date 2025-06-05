@@ -28,10 +28,6 @@ SECRET_KEY = 'django-insecure-vi_t&!q5f31k^03+tk3ygw0x=l85$!^v*##gy%*2v%!cf$c!g9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.MD5PasswordHasher',
-]
-
 
 ALLOWED_HOSTS = []
 AUTHENTICATION_BACKENDS = [
