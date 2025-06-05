@@ -67,20 +67,30 @@ python -m venv venv
 venv/Scripts/Activate
 ```
 
-### 4. Встановлення залежностей
+### 4. Створення .env файлу з даними для бази даних
+
+```bash
+DB_PASSWORD = 'postgres'
+DB_HOST = 'localhost'
+DB_PORT ='5432'
+DB_USERNAME = 'postgres'
+DB_NAME = 'AlgoLib'
+```
+
+### 5. Встановлення залежностей
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Налаштування БД
+### 6. Налаштування БД
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 6. Запуск сервера
+### 7. Запуск сервера
 
 ```bash
 python manage.py runserver
@@ -226,6 +236,7 @@ locust -f locust_graphql.py --host=http://127.0.0.1:8080/graphql/
 | Проблема                   | Рішення                                  |
 |---------------------------|-------------------------------------------|
 | Сайту за посиланням не існує      | При використанні runserver використовується порт 8000, waitress використовує порт 8080 |
+| Точка доступу не працює           | Перевірити правильність посилання, наприклад /login правильне, а /login/ ні |
 | JWT не зберігається               | Перевірити cookie-налаштування (HttpOnly, SameSite) |
 | Код не виконується                | Перевірити правильність синтаксису та sandbox-обмеження |
 | CORS помилка                      | Додати CORS middleware (`django-cors-headers`) |
