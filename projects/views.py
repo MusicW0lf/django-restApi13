@@ -178,7 +178,7 @@ def create_project(request):
     project = Project.objects.create(
         name=name,
         language=language,
-        code="You can write your code here!",
+        code="",
         author=user,
         random_colors=random_colors,
     )
