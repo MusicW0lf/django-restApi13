@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-from conf import DB_HOST, DB_PASSWORD, DB_PORT, DB_USERNAME
+from os import getenv
+from dotenv import load_dotenv
 from datetime import timedelta
-import os
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -84,11 +85,11 @@ CORS_ALLOW_METHODS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': "AlgoLib",
-        'USER': DB_USERNAME,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': DB_HOST,
-        'PORT': DB_PORT, 
+        'NAME': getenv('DB_NAME'),
+        'USER': getenv('DB_USERNAME'),
+        'PASSWORD': getenv('DB_PASSWORD'),
+        'HOST': getenv('DB_HOST'),
+        'PORT': getenv('DB_PORT'), 
     }
 }
 
